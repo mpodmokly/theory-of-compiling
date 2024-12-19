@@ -1,1 +1,1 @@
-# theory-of-compiling
+# Theory of compiling
