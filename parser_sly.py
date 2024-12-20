@@ -27,6 +27,10 @@ class Mparser(Parser):
     def instructions_opt(self, p):
         return AST.Instructions()
 
+    @_('instructions instruction_if')
+    def instructions(self, p):
+        return AST.Instructions(p.instructions, p.instruction_if)
+
     @_('instructions instruction_rek')
     def instructions(self, p):
         return AST.Instructions(p.instructions, p.instruction_rek)
@@ -34,6 +38,10 @@ class Mparser(Parser):
     @_('instructions instruction')
     def instructions(self, p):
         return AST.Instructions(p.instructions, p.instruction)
+
+    @_('instruction_if')
+    def instructions(self, p):
+        return AST.Instructions(p.instruction_if)
 
     @_('instruction_rek')
     def instructions(self, p):
@@ -44,16 +52,20 @@ class Mparser(Parser):
         return AST.Instructions(p.instruction)
     
     @_('IF "(" condition ")" instruction')# %prec IFX
-    def instruction_rek(self, p):
+    def instruction_if(self, p):
         return AST.IfStatement(p.condition, p.instruction)
     
+    @_('IF "(" condition ")" instruction ELSE instruction_if')
+    def instruction_if(self, p):
+        return AST.IfStatement(p.condition, p.instruction, p.instruction_if)
+    
     @_('IF "(" condition ")" instruction ELSE instruction')
-    def instruction_rek(self, p):
+    def instruction_if(self, p):
         return AST.IfStatement(p.condition, p.instruction0, p.instruction1)
     
     @_('FOR ID "=" expr ":" expr instruction')
     def instruction_rek(self, p):
-        return AST.ForStatement(p.ID, p.expr0, p.expr1, p.instruction)
+        return AST.ForStatement(AST.Variable(p.ID), AST.Range(p.expr0, p.expr1), p.instruction)
 
     @_('WHILE "(" condition ")" instruction')
     def instruction_rek(self, p):
@@ -75,13 +87,9 @@ class Mparser(Parser):
     def instruction(self, p):
         return AST.ReturnStatement(p.expr)
     
-    # @_('PRINT elements ";"')
-    # def instruction(self, p):
-    #     pass
-
-    @_('PRINT expr ";"')
+    @_('PRINT elements ";"')
     def instruction(self, p):
-        return AST.PrintStatement(p.expr)
+        return AST.PrintStatement(p.elements)
     
     @_('ID "=" expr ";"')
     def instruction(self, p):
@@ -177,11 +185,11 @@ class Mparser(Parser):
 
     @_('INTNUM')
     def expr(self, p):
-        return AST.FloatNum(p.INTNUM)
+        return AST.IntNum(p.INTNUM)
 
     @_('STRING')
     def expr(self, p):
-        return AST.FloatNum(p.STRING)
+        return AST.String(p.STRING)
 
     @_('ID')
     def expr(self, p):

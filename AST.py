@@ -45,11 +45,15 @@ class IfStatement(Node):
         self.false_statement = false_statement
 
 class ForStatement(Node):
-    def __init__(self, variable, begin, end, statement):
+    def __init__(self, variable, for_range, statement):
         self.variable = variable
+        self.for_range = for_range
+        self.statement = statement
+
+class Range(Node):
+    def __init__(self, begin, end):
         self.begin = begin
         self.end = end
-        self.statement = statement
 
 class WhileStatement(Node):
     def __init__(self, condition, statement):
@@ -92,15 +96,15 @@ class Vector(Node):
     def __init__(self, elements):
         self.elements = elements
 
-class Elements(Node):
-    def __init__(self, element1, element2):
-        self.element1 = element1
-        self.element2 = element2
-
 class Reference(Node):
     def __init__(self, name, elements):
         self.name = name
         self.elements = elements
+
+class Elements(Node):
+    def __init__(self, element1, element2):
+        self.element1 = element1
+        self.element2 = element2
 
 class Error(Node):
     def __init__(self):

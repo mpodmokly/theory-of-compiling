@@ -21,15 +21,15 @@ class TreePrinter:
 
     @addToClass(AST.IntNum)
     def printTree(self, indent = 0):
-        print("|  " * indent + f"IntNum({self.value})")
+        print("|  " * indent + self.value)
     
     @addToClass(AST.FloatNum)
     def printTree(self, indent = 0):
-        print("|  " * indent + f"FloatNum({self.value})")
+        print("|  " * indent + self.value)
 
     @addToClass(AST.String)
     def printTree(self, indent = 0):
-        print("|  " * indent + f"String({self.value})")
+        print("|  " * indent + self.value)
 
     @addToClass(AST.Variable)
     def printTree(self, indent = 0):
@@ -56,17 +56,25 @@ class TreePrinter:
     def printTree(self, indent = 0):
         print("|  " * indent + "IF")
         self.condition.printTree(indent + 1)
+
+        print("|  " * indent + "THEN")
         self.true_statement.printTree(indent + 1)
         if self.false_statement is not None:
+            print("|  " * indent + "ELSE")
             self.false_statement.printTree(indent + 1)
 
     @addToClass(AST.ForStatement)
     def printTree(self, indent = 0):
         print("|  " * indent + "FOR")
         self.variable.printTree(indent + 1)
+        self.for_range.printTree(indent + 1)
+        self.statement.printTree(indent + 1)
+    
+    @addToClass(AST.Range)
+    def printTree(self, indent = 0):
+        print("|  " * indent + "RANGE")
         self.begin.printTree(indent + 1)
         self.end.printTree(indent + 1)
-        self.statement.printTree(indent + 1)
 
     @addToClass(AST.WhileStatement)
     def printTree(self, indent = 0):

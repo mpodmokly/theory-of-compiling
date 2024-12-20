@@ -24,8 +24,8 @@ class Scanner(Lexer):
     MOREEQ = r">="
 
     STRING = r"(\".*?\")|(\'.*?\')"
-    FLOATNUM = r"((\d+\.\d*)|(\d*\.\d+))((e|E)[+-]\d+)?"
-    INTNUM = r"\d+"
+    FLOATNUM = r"-?()"
+    INTNUM = r"-?\d+"
 
     ID = r"[a-zA-Z_][a-zA-Z0-9]*"
     ID["if"] = IF
