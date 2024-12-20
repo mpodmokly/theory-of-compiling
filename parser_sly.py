@@ -75,6 +75,10 @@ class Mparser(Parser):
     def instruction(self, p):
         return AST.ReturnStatement(p.expr)
     
+    # @_('PRINT elements ";"')
+    # def instruction(self, p):
+    #     pass
+
     @_('PRINT expr ";"')
     def instruction(self, p):
         return AST.PrintStatement(p.expr)
@@ -85,7 +89,7 @@ class Mparser(Parser):
     
     @_('ID "[" elements "]" "=" expr ";"')
     def instruction(self, p):
-        return AST.Assignment(AST.Vector(p.elements), p.expr)
+        return AST.Assignment(AST.Reference(AST.Variable(p.ID), p.elements), p.expr)
 
     @_('ID ADDASSIGN expr ";"')
     def instruction(self, p):
@@ -161,8 +165,7 @@ class Mparser(Parser):
 
     @_('"[" elements "]"')
     def expr(self, p):
-        #return AST.Vector(p.elements)
-        pass
+        return AST.Vector(p.elements)
 
     @_('ID "[" elements "]"')
     def expr(self, p):
@@ -186,7 +189,7 @@ class Mparser(Parser):
     
     @_('elements "," expr')
     def elements(self, p):
-        pass
+        return AST.Elements(p.elements, p.expr)
 
     @_('expr')
     def elements(self, p):

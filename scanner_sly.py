@@ -5,10 +5,10 @@ class Scanner(Lexer):
     ignore = " \t"
     literals = "=();':,{}[]+-*/<>"
     tokens = {ID, DOTADD, DOTSUB, DOTMUL, DOTDIV, ADDASSIGN,
-              SUBASSIGN, MULASSIGN, DIVASSIGN, EQ, NOTEQ, LESS,
-              MORE, LESSEQ, MOREEQ, IF, ELSE, FOR, WHILE, BREAK,
-              CONTINUE, RETURN, EYE, ZEROS, ONES, PRINT, INTNUM,
-              FLOATNUM, STRING}
+              SUBASSIGN, MULASSIGN, DIVASSIGN, EQ, NOTEQ, LESSEQ,
+              MOREEQ, IF, ELSE, FOR, WHILE, BREAK, CONTINUE,
+              RETURN, EYE, ZEROS, ONES, PRINT, INTNUM, FLOATNUM,
+              STRING}
     
     DOTADD = r".\+"
     DOTSUB = r".-"

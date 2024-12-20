@@ -14,11 +14,10 @@ class TreePrinter:
 
     @addToClass(AST.Instructions)
     def printTree(self, indent = 0):
-        print("|  " * indent + "Instructions")
         if self.instr_first is not None:
-            self.instr_first.printTree(indent + 1)
+            self.instr_first.printTree(indent)
         if self.instr_second is not None:
-            self.instr_second.printTree(indent + 1)
+            self.instr_second.printTree(indent)
 
     @addToClass(AST.IntNum)
     def printTree(self, indent = 0):
@@ -117,13 +116,18 @@ class TreePrinter:
     @addToClass(AST.Vector)
     def printTree(self, indent = 0):
         print("|  " * indent + "VECTOR")
-        self.element.printTree(indent + 1)
+        self.elements.printTree(indent + 1)
+    
+    @addToClass(AST.Elements)
+    def printTree(self, indent = 0):
+        self.element1.printTree(indent)
+        self.element2.printTree(indent)
 
     @addToClass(AST.Reference)
     def printTree(self, indent = 0):
         print("|  " * indent + "REF")
         self.name.printTree(indent + 1)
-        self.element.printTree(indent + 1)
+        self.elements.printTree(indent + 1)
 
 
 
