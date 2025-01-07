@@ -139,5 +139,5 @@ class TreePrinter:
 
     @addToClass(AST.Error)
     def printTree(self, indent = 0):
-        pass    
+        pass
         # fill in the body
