@@ -137,8 +137,6 @@ class TreePrinter:
         self.name.printTree(indent + 1)
         self.elements.printTree(indent + 1)
 
-
-
     @addToClass(AST.Error)
     def printTree(self, indent = 0):
         pass    
