@@ -22,6 +22,11 @@ class Variable(Node):
     def __init__(self, name):
         self.name = name
 
+class Assignment(Node):
+    def __init__(self, variable, value):
+        self.variable = variable
+        self.value = value
+
 class BinExpr(Node):
     def __init__(self, operator, left, right):
         self.operator = operator
@@ -32,11 +37,6 @@ class UnExpr(Node):
     def __init__(self, operator, arg):
         self.operator = operator
         self.arg = arg
-
-class Assignment(Node):
-    def __init__(self, variable, value):
-        self.variable = variable
-        self.value = value
 
 class IfStatement(Node):
     def __init__(self, condition, true_statement, false_statement = None):

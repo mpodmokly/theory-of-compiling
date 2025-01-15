@@ -7,8 +7,10 @@ class Mparser(Parser):
     debugfile = 'parser.out'
 
     precedence = (
-        #('nonassoc', IFX),
-        #('nonassoc', ELSE),
+        # ('nonassoc', IFX),
+        # ('nonassoc', ELSE),
+        ('nonassoc', ADDASSIGN, SUBASSIGN, MULASSIGN, DIVASSIGN),
+        ('nonassoc', EQ, NOTEQ, LESSEQ, MOREEQ, "<", ">"),
         ('left', "+", "-", DOTADD, DOTSUB),
         ('left', "*", "/", DOTMUL, DOTDIV),
         ('right', UMINUS),
@@ -177,7 +179,7 @@ class Mparser(Parser):
 
     @_('ID "[" elements "]"')
     def expr(self, p):
-        pass
+        return AST.Reference(AST.Variable(p.ID), p.elements)
 
     @_('FLOATNUM')
     def expr(self, p):

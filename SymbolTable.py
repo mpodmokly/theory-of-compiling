@@ -1,31 +1,31 @@
-class VariableSymbol(Symbol):
+class Symbol:
     def __init__(self, name, type):
-        pass
-    #
+        self.name = name
+        self.type = type
+
+
+class MatrixSymbol(Symbol):
+    def __init__(self, name, type, size):
+        super().__init__(name, type)
+        self.size = size
 
 
 class SymbolTable(object):
+    def __init__(self): # parent scope and symbol table name
+        self.scopes = [{}]
 
-    def __init__(self, parent, name): # parent scope and symbol table name
-        pass
-    #
-
-    def put(self, name, symbol): # put variable symbol or fundef under <name> entry
-        pass
-    #
+    def put(self, symbol): # put variable symbol or fundef under <name> entry
+        self.scopes[-1][symbol.name] = symbol
 
     def get(self, name): # get variable symbol or fundef from <name> entry
-        pass
-    #
+        for scope in self.scopes:
+            if name in scope:
+                return scope[name]
+        
+        return None
 
-    def getParentScope(self):
-        pass
-    #
-
-    def pushScope(self, name):
-        pass
-    #
+    def pushScope(self):
+        self.scopes.append({})
 
     def popScope(self):
-        pass
-    #
+        self.scopes.pop()
