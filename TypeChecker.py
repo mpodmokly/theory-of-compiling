@@ -8,36 +8,16 @@ class NodeVisitor(object):
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node)
     
-    # simpler version of generic_visit, not so general
     def generic_visit(self, node):
        for child in node.children:
            self.visit(child)
-
-    # def generic_visit(self, node): # Called if no explicit visitor function exists for a node.
-    #     if isinstance(node, list):
-    #         for elem in node:
-    #             self.visit(elem)
-    #     else:
-    #         for child in node.children:
-    #             if isinstance(child, list):
-    #                 for item in child:
-    #                     if isinstance(item, AST.Node):
-    #                         self.visit(item)
-    #             elif isinstance(child, AST.Node):
-    #                 self.visit(child)
-
-
-class Result:
-    def __init__(self, error = None, type = None, size = None):
-        self.error = error
-        self.type = type
-        self.size = size
 
 
 class TypeChecker(NodeVisitor):
     def __init__(self):
         self.symbol_table = SymbolTable()
         self.ASSIGNMENT = False
+        self.VALUE = -1
 
     def visit_Instructions(self, node):
         if node.instr_first is not None:
@@ -46,9 +26,11 @@ class TypeChecker(NodeVisitor):
             self.visit(node.instr_second)
     
     def visit_IntNum(self, node):
+        self.VALUE = int(node.value)
         return int
     
     def visit_FloatNum(self, node):
+        self.VALUE = float(node.value)
         return float
     
     def visit_String(self, node):
@@ -104,7 +86,9 @@ class TypeChecker(NodeVisitor):
 
         if symbol is None:
             if not self.ASSIGNMENT:
-                print(f"{node.name} is not declared")
+                print(f"Identifier {node.name} is not declared")
+            
+            self.ASSIGNMENT = False
             return None
         
         self.ASSIGNMENT = False
@@ -115,12 +99,16 @@ class TypeChecker(NodeVisitor):
 
         if type is not int:
             print("int type expected")
+        
+        return self.VALUE
 
     def visit_OnesStatement(self, node):
         type = self.visit(node.value)
 
         if type is not int:
             print("int type expected")
+        
+        return self.VALUE
 
     def visit_ZerosStatement(self, node):
         type = self.visit(node.value)
@@ -128,7 +116,7 @@ class TypeChecker(NodeVisitor):
         if type is not int:
             print("int type expected")
 
-        return list
+        return self.VALUE
     
     def visit_BinExpr(self, node):
         type_left = self.visit(node.left)
@@ -136,21 +124,53 @@ class TypeChecker(NodeVisitor):
 
         if type_left is not None and type_right is not None:
             if type_left is list and type_right is list:
+                # check dimensions compatibility
                 pass
             elif type_left is not type_right:
                 if not (type_left is int and type_right is float):
                     if not (type_left is float and type_right is int):
-                        print(f"Incompatible types {type_left}")
+                        print(f"Incompatible types {type_left} and {type_right}")
+        
+        return type_left
+    
+    def visit_UnExpr(self, node):
+        type = self.visit(node.arg)
+
+        if type is str:
+            print("Unary operator is not supported for type str")
+        
+        return type
 
     def visit_Vector(self, node):
-        #symbol = self.visit(node.elements)
-        #return Result()
-        pass
+        return self.visit(node.elements)
     
     def visit_Elements(self, node):
-        #symbol1 = self.visit(node.element1)
-        #symbol2 = self.visit(node.element2)
-        pass
+        size = 0
+        symbol1 = self.visit(node.element1)
+        symbol2 = self.visit(node.element2)
+
+        if type(node.element2) is AST.Vector:
+            if symbol1 is None:
+                return None
+            elif symbol1 != symbol2:
+                print(f"Invalid matrix dimensions {symbol1} and {symbol2}")
+                return None
+            return symbol2
+
+        if type(symbol1) is int:
+            size += symbol1
+        else:
+            if symbol1 is str:
+                print("Incompatible str in matrix")
+            size += 1
+        if type(symbol2) is int:
+            size += symbol2
+        else:
+            if symbol2 is str:
+                print("Incompatible str in matrix")
+            size += 1
+        
+        return size
     
     def visit_Reference(self, node):
         #symbol = self.symbol_table.get(node.name)
@@ -163,11 +183,15 @@ class TypeChecker(NodeVisitor):
 
         if symbol_val is not None:
             if symbol_id is None:
-                if symbol_val is list:
-                    #self.symbol_table.put(MatrixSymbol(node.variable.name, symbol_val))
-                    pass
+                if type(node.value) is AST.Vector or\
+                    type(node.value) is AST.ZerosStatement or\
+                    type(node.value) is AST.OnesStatement or\
+                    type(node.value) is AST.EyeStatement:
+                    self.symbol_table.put(MatrixSymbol(node.variable.name, list, symbol_val))
                 else:
-                    self.symbol_table.put(Symbol(node.variable.name, symbol_val))
+                    self.symbol_table.put(\
+                        Symbol(node.variable.name, symbol_val))
             else:
-                if symbol_id is not symbol_val:
+                if symbol_id is not symbol_val and not (symbol_id is\
+                    list and type(node.value) is AST.Vector):
                     print("Incompatible types assignment")

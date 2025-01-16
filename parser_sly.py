@@ -103,19 +103,19 @@ class Mparser(Parser):
 
     @_('ID ADDASSIGN expr ";"')
     def instruction(self, p):
-        return AST.BinExpr("+=", AST.Variable(p.ID), p.expr)
+        return AST.Assignment(AST.Variable(p.ID), AST.BinExpr("+", AST.Variable(p.ID), p.expr))
 
     @_('ID SUBASSIGN expr ";"')
     def instruction(self, p):
-        return AST.BinExpr("-=", AST.Variable(p.ID), p.expr)
+        return AST.Assignment(AST.Variable(p.ID), AST.BinExpr("-", AST.Variable(p.ID), p.expr))
 
     @_('ID MULASSIGN expr ";"')
     def instruction(self, p):
-        return AST.BinExpr("*=", AST.Variable(p.ID), p.expr)
+        return AST.Assignment(AST.Variable(p.ID), AST.BinExpr("*", AST.Variable(p.ID), p.expr))
 
     @_('ID DIVASSIGN expr ";"')
     def instruction(self, p):
-        return AST.BinExpr("/=", AST.Variable(p.ID), p.expr)
+        return AST.Assignment(AST.Variable(p.ID), AST.BinExpr("/", AST.Variable(p.ID), p.expr))
 
     @_('expr "\'"')
     def expr(self, p):
