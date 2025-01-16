@@ -8,10 +8,10 @@ for i = 1:N {
     }
 }
 
-while(k>0) {
-    if(k<5)
+while(k > 0) {
+    if(k < 5)
         i = 1;
-    else if(k<10)
+    else if(k < 10)
         i = 2;
     else
         i = 3;
