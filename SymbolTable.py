@@ -1,13 +1,14 @@
 class Symbol:
-    def __init__(self, name, type):
+    def __init__(self, name, type, size = 0):
         self.name = name
         self.type = type
-
-
-class MatrixSymbol(Symbol):
-    def __init__(self, name, type, size):
-        super().__init__(name, type)
         self.size = size
+
+
+# class MatrixSymbol(Symbol):
+#     def __init__(self, name, type, size):
+#         super().__init__(name, type)
+#         self.size = size
 
 
 class SymbolTable(object):
