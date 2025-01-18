@@ -17,145 +17,154 @@ class Mparser(Parser):
         ('left', "\'"),
     )
 
+    def __init__(self):
+        self.error_handled = False
+
     @_('instructions_opt')
     def program(self, p):
-        return AST.Instructions(p.instructions_opt)
+        return AST.Instructions(p.lineno, p.instructions_opt)
 
     @_('instructions')
     def instructions_opt(self, p):
-        return AST.Instructions(p.instructions)
+        return AST.Instructions(p.lineno, p.instructions)
 
     @_('')
     def instructions_opt(self, p):
-        return AST.Instructions()
+        return AST.Instructions(p.lineno)
 
     @_('instructions instruction_if')
     def instructions(self, p):
-        return AST.Instructions(p.instructions, p.instruction_if)
+        return AST.Instructions(p.lineno, p.instructions, p.instruction_if)
 
     @_('instructions instruction_rek')
     def instructions(self, p):
-        return AST.Instructions(p.instructions, p.instruction_rek)
+        return AST.Instructions(p.lineno, p.instructions, p.instruction_rek)
 
     @_('instructions instruction')
     def instructions(self, p):
-        return AST.Instructions(p.instructions, p.instruction)
+        return AST.Instructions(p.lineno, p.instructions, p.instruction)
 
     @_('instruction_if')
     def instructions(self, p):
-        return AST.Instructions(p.instruction_if)
+        return AST.Instructions(p.lineno, p.instruction_if)
 
     @_('instruction_rek')
     def instructions(self, p):
-        return AST.Instructions(p.instruction_rek)
+        return AST.Instructions(p.lineno, p.instruction_rek)
 
     @_('instruction')
     def instructions(self, p):
-        return AST.Instructions(p.instruction)
+        return AST.Instructions(p.lineno, p.instruction)
     
-    @_('IF "(" condition ")" instruction')# %prec IFX
+    @_('IF "(" condition ")" instruction') # %prec IFX
     def instruction_if(self, p):
-        return AST.IfStatement(p.condition, p.instruction)
+        return AST.IfStatement(p.lineno, p.condition, p.instruction)
     
     @_('IF "(" condition ")" instruction ELSE instruction_if')
     def instruction_if(self, p):
-        return AST.IfStatement(p.condition, p.instruction, p.instruction_if)
+        return AST.IfStatement(p.lineno, p.condition, p.instruction, p.instruction_if)
     
     @_('IF "(" condition ")" instruction ELSE instruction')
     def instruction_if(self, p):
-        return AST.IfStatement(p.condition, p.instruction0, p.instruction1)
+        return AST.IfStatement(p.lineno, p.condition, p.instruction0, p.instruction1)
     
     @_('FOR ID "=" expr ":" expr instruction')
     def instruction_rek(self, p):
-        return AST.ForStatement(AST.Variable(p.ID), AST.Range(p.expr0, p.expr1), p.instruction)
+        return AST.ForStatement(p.lineno, AST.Variable(p.lineno, p.ID),\
+            AST.Range(p.lineno, p.expr0, p.expr1), p.instruction)
 
     @_('WHILE "(" condition ")" instruction')
     def instruction_rek(self, p):
-        return AST.WhileStatement(p.condition, p.instruction)
+        return AST.WhileStatement(p.lineno, p.condition, p.instruction)
 
     @_('"{" instructions "}"')
     def instruction(self, p):
-        return AST.Instructions(p.instructions)
+        return AST.Instructions(p.lineno, p.instructions)
 
     @_('BREAK ";"')
     def instruction(self, p):
-        return AST.BreakStatement()
+        return AST.BreakStatement(p.lineno, )
     
     @_('CONTINUE ";"')
     def instruction(self, p):
-        return AST.ContinueStatement()
+        return AST.ContinueStatement(p.lineno, )
 
     @_('RETURN expr ";"')
     def instruction(self, p):
-        return AST.ReturnStatement(p.expr)
+        return AST.ReturnStatement(p.lineno, p.expr)
     
     @_('PRINT elements ";"')
     def instruction(self, p):
-        return AST.PrintStatement(p.elements)
+        return AST.PrintStatement(p.lineno, p.elements)
     
     @_('ID "=" expr ";"')
     def instruction(self, p):
-        return AST.Assignment(AST.Variable(p.ID), p.expr)
+        return AST.Assignment(p.lineno, AST.Variable(p.lineno, p.ID), p.expr)
     
     @_('ID "[" elements "]" "=" expr ";"')
     def instruction(self, p):
-        return AST.Assignment(AST.Reference(AST.Variable(p.ID), p.elements), p.expr)
+        return AST.Assignment(p.lineno, AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements), p.expr)
 
     @_('ID ADDASSIGN expr ";"')
     def instruction(self, p):
-        return AST.Assignment(AST.Variable(p.ID), AST.BinExpr("+", AST.Variable(p.ID), p.expr))
+        return AST.Assignment(p.lineno, AST.Variable(p.lineno, p.ID),\
+            AST.BinExpr(p.lineno, "+", AST.Variable(p.lineno, p.ID), p.expr))
 
     @_('ID SUBASSIGN expr ";"')
     def instruction(self, p):
-        return AST.Assignment(AST.Variable(p.ID), AST.BinExpr("-", AST.Variable(p.ID), p.expr))
+        return AST.Assignment(p.lineno, AST.Variable(p.lineno, p.ID),\
+            AST.BinExpr(p.lineno, "-", AST.Variable(p.lineno, p.ID), p.expr))
 
     @_('ID MULASSIGN expr ";"')
     def instruction(self, p):
-        return AST.Assignment(AST.Variable(p.ID), AST.BinExpr("*", AST.Variable(p.ID), p.expr))
+        return AST.Assignment(p.lineno, AST.Variable(p.lineno, p.ID),\
+            AST.BinExpr(p.lineno, "*", AST.Variable(p.lineno, p.ID), p.expr))
 
     @_('ID DIVASSIGN expr ";"')
     def instruction(self, p):
-        return AST.Assignment(AST.Variable(p.ID), AST.BinExpr("/", AST.Variable(p.ID), p.expr))
+        return AST.Assignment(p.lineno, AST.Variable(p.lineno, p.ID),\
+            AST.BinExpr(p.lineno, "/", AST.Variable(p.lineno, p.ID), p.expr))
 
     @_('expr "\'"')
     def expr(self, p):
-        return AST.UnExpr("\'", p.expr)
+        return AST.UnExpr(p.lineno, "\'", p.expr)
 
     @_('expr "+" expr')
     def expr(self, p):
-        return AST.BinExpr("+", p.expr0, p.expr1)
+        return AST.BinExpr(p.lineno, "+", p.expr0, p.expr1)
 
     @_('expr "-" expr')
     def expr(self, p):
-        return AST.BinExpr("-", p.expr0, p.expr1)
+        return AST.BinExpr(p.lineno, "-", p.expr0, p.expr1)
 
     @_('expr "*" expr')
     def expr(self, p):
-        return AST.BinExpr("*", p.expr0, p.expr1)
+        return AST.BinExpr(p.lineno, "*", p.expr0, p.expr1)
 
     @_('expr "/" expr')
     def expr(self, p):
-        return AST.BinExpr("/", p.expr0, p.expr1)
+        return AST.BinExpr(p.lineno, "/", p.expr0, p.expr1)
 
     @_('"-" expr %prec UMINUS')
     def expr(self, p):
-        return AST.UnExpr("-", p.expr)
+        return AST.UnExpr(p.lineno, "-", p.expr)
 
     @_('expr DOTADD expr')
     def expr(self, p):
-        return AST.BinExpr(".+", p.expr0, p.expr1)
+        return AST.BinExpr(p.lineno, ".+", p.expr0, p.expr1)
 
     @_('expr DOTSUB expr')
     def expr(self, p):
-        return AST.BinExpr(".-", p.expr0, p.expr1)
+        return AST.BinExpr(p.lineno, ".-", p.expr0, p.expr1)
 
     @_('expr DOTMUL expr')
     def expr(self, p):
-        return AST.BinExpr(".*", p.expr0, p.expr1)
+        return AST.BinExpr(p.lineno, ".*", p.expr0, p.expr1)
 
     @_('expr DOTDIV expr')
     def expr(self, p):
-        return AST.BinExpr("./", p.expr0, p.expr1)
+        return AST.BinExpr(p.lineno, "./", p.expr0, p.expr1)
     
     @_('"(" expr ")"')
     def expr(self, p):
@@ -163,43 +172,43 @@ class Mparser(Parser):
 
     @_('EYE "(" expr ")"')
     def expr(self, p):
-        return AST.EyeStatement(p.expr)
+        return AST.EyeStatement(p.lineno, p.expr)
 
     @_('ONES "(" expr ")"')
     def expr(self, p):
-        return AST.OnesStatement(p.expr)
+        return AST.OnesStatement(p.lineno, p.expr)
 
     @_('ZEROS "(" expr ")"')
     def expr(self, p):
-        return AST.ZerosStatement(p.expr)
+        return AST.ZerosStatement(p.lineno, p.expr)
 
     @_('"[" elements "]"')
     def expr(self, p):
-        return AST.Vector(p.elements)
+        return AST.Vector(p.lineno, p.elements)
 
     @_('ID "[" elements "]"')
     def expr(self, p):
-        return AST.Reference(AST.Variable(p.ID), p.elements)
+        return AST.Reference(p.lineno, AST.Variable(p.lineno, p.ID), p.elements)
 
     @_('FLOATNUM')
     def expr(self, p):
-        return AST.FloatNum(p.FLOATNUM)
+        return AST.FloatNum(p.lineno, p.FLOATNUM)
 
     @_('INTNUM')
     def expr(self, p):
-        return AST.IntNum(p.INTNUM)
+        return AST.IntNum(p.lineno, p.INTNUM)
 
     @_('STRING')
     def expr(self, p):
-        return AST.String(p.STRING)
+        return AST.String(p.lineno, p.STRING)
 
     @_('ID')
     def expr(self, p):
-        return AST.Variable(p.ID)
+        return AST.Variable(p.lineno, p.ID)
     
     @_('elements "," expr')
     def elements(self, p):
-        return AST.Elements(p.elements, p.expr)
+        return AST.Elements(p.lineno, p.elements, p.expr)
 
     @_('expr')
     def elements(self, p):
@@ -207,24 +216,28 @@ class Mparser(Parser):
 
     @_('expr EQ expr')
     def condition(self, p):
-        return AST.Condition("==", p.expr0, p.expr1)
+        return AST.Condition(p.lineno, "==", p.expr0, p.expr1)
 
     @_('expr NOTEQ expr')
     def condition(self, p):
-        return AST.Condition("!=", p.expr0, p.expr1)
+        return AST.Condition(p.lineno, "!=", p.expr0, p.expr1)
 
     @_('expr LESSEQ expr')
     def condition(self, p):
-        return AST.Condition("<=", p.expr0, p.expr1)
+        return AST.Condition(p.lineno, "<=", p.expr0, p.expr1)
 
     @_('expr MOREEQ expr')
     def condition(self, p):
-        return AST.Condition(">=", p.expr0, p.expr1)
+        return AST.Condition(p.lineno, ">=", p.expr0, p.expr1)
 
     @_('expr "<" expr')
     def condition(self, p):
-        return AST.Condition("<", p.expr0, p.expr1)
+        return AST.Condition(p.lineno, "<", p.expr0, p.expr1)
 
     @_('expr ">" expr')
     def condition(self, p):
-        return AST.Condition(">", p.expr0, p.expr1)
+        return AST.Condition(p.lineno, ">", p.expr0, p.expr1)
+
+    def error(self, p):
+        print(f"Syntax error at line {p.lineno}, token={p.value}")
+        self.error_handled = True

@@ -42,11 +42,15 @@ class Scanner(Lexer):
 
     ignore_comment = r"#.*"
 
+    def __init__(self):
+        self.error_handled = False
+
     @_(r"\n+")
     def ignore_newline(self, t):
         self.lineno += len(t.value)
     def error(self, t):
         print(f"Illegal character '{t.value[0]}' in line {t.lineno}")
+        self.error_handled = True
         self.index += 1
 
 

@@ -16,10 +16,9 @@ if __name__ == '__main__':
     text = file.read()
     lexer = Scanner()
     parser = Mparser()
-
     ast = parser.parse(lexer.tokenize(text))
-    ast.printTree()
 
-    # Below code shows how to use visitor
-    typeChecker = TypeChecker()
-    typeChecker.visit(ast) # or alternatively ast.accept(typeChecker)
+    if not lexer.error_handled and not parser.error_handled:
+        ast.printTree()
+        typeChecker = TypeChecker()
+        typeChecker.visit(ast)

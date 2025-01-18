@@ -9,8 +9,7 @@ class NodeVisitor(object):
         return visitor(node)
     
     def generic_visit(self, node):
-       for child in node.children:
-           self.visit(child)
+        print(f"type {node} not handled")
 
 
 class TypeChecker(NodeVisitor):
@@ -89,11 +88,11 @@ class TypeChecker(NodeVisitor):
     
     def visit_BreakStatement(self, node):
         if self.loop == 0:
-            print("break statement outside the loop")
+            print(f"line {node.lineno}: break statement outside the loop")
 
     def visit_ContinueStatement(self, node):
         if self.loop == 0:
-            print("continue statement outside the loop")
+            print(f"line {node.lineno}: continue statement outside the loop")
 
     def visit_ReturnStatement(self, node):
         self.visit(node.value)
@@ -106,7 +105,7 @@ class TypeChecker(NodeVisitor):
 
         if symbol is None:
             if not self.assignment:
-                print(f"Identifier {node.name} is not declared")
+                print(f"line {node.lineno}: identifier {node.name} is not declared")
             
             self.assignment = False
             return None
@@ -118,7 +117,7 @@ class TypeChecker(NodeVisitor):
         type = self.visit(node.value)
 
         if type is not int:
-            print("int type expected")
+            print(f"line {node.lineno}: int type expected")
         
         return self.value
 
@@ -126,7 +125,7 @@ class TypeChecker(NodeVisitor):
         type = self.visit(node.value)
 
         if type is not int:
-            print("int type expected")
+            print(f"line {node.lineno}: int type expected")
         
         return self.value
 
@@ -134,7 +133,7 @@ class TypeChecker(NodeVisitor):
         type = self.visit(node.value)
 
         if type is not int:
-            print("int type expected")
+            print(f"line {node.lineno}: int type expected")
 
         return self.value
     
@@ -142,34 +141,29 @@ class TypeChecker(NodeVisitor):
         type_left = self.visit(node.left)
         type_right = self.visit(node.right)
 
-        if type_left is not None and type_right is not None:
-            # check dimensions compatibility - direct matrix
-            if type(type_left) is int and type(type_right) is int:
-                if type_left != type_right:
-                    print(f"Incompatible matrix sizes {type_left} and {type_right}")
-            
-            # check dimensions compatibility - matrix symbol
-            elif type_left is list and type_right is list:
-                symbol_left = self.symbol_table.get(node.left.name)
-                symbol_right = self.symbol_table.get(node.right.name)
+        if type_left is None or type_right is None:
+            return type_left
+        
+        # check matrix dimensions compatibility
+        if type(type_left) is int and type(type_right) is int:
+            if type_left != type_right:
+                print(f"line {node.lineno}: incompatible matrix sizes {\
+                    type_left} and {type_right}")
 
-                if symbol_left.size != symbol_right.size:
-                    print(f"Incompatible matrix sizes {symbol_left.size} and {\
-                        symbol_right.size}")
+        elif type_left is not type_right:
+            if not (type_left is int and type_right is float):
+                if not (type_left is float and type_right is int):
+                    type_left_key = type_left
+                    type_right_key = type_right
 
-            elif type_left is not type_right:
-                if not (type_left is int and type_right is float):
-                    if not (type_left is float and type_right is int):
-                        type_left_key = type_left
-                        type_right_key = type_right
-
-                        if type(type_left_key) is int:
-                            type_left_key = list
-                        if type(type_right_key) is int:
-                            type_right_key = list
-                        
-                        print(f"Incompatible types {self.TYPES_DICT[type_left_key]} and {\
-                            self.TYPES_DICT[type_right_key]}")
+                    if type(type_left_key) is int:
+                        type_left_key = list
+                    if type(type_right_key) is int:
+                        type_right_key = list
+                    
+                    print(f"line {node.lineno}: incompatible types {\
+                        self.TYPES_DICT[type_left_key]} and {\
+                        self.TYPES_DICT[type_right_key]}")
         
         return type_left
     
@@ -177,7 +171,7 @@ class TypeChecker(NodeVisitor):
         type = self.visit(node.arg)
 
         if type is str:
-            print("Unary operator is not supported for type str")
+            print(f"line {node.lineno}: unary operator is not supported for type str")
         
         return type
 
@@ -193,7 +187,8 @@ class TypeChecker(NodeVisitor):
             if symbol1 is None:
                 return None
             elif symbol1 != symbol2:
-                print(f"Invalid matrix dimensions {symbol1} and {symbol2}")
+                print(f"line {node.lineno}: invalid matrix dimensions {\
+                    symbol1} and {symbol2}")
                 return None
             return symbol2
 
@@ -201,19 +196,19 @@ class TypeChecker(NodeVisitor):
             size += symbol1
         else:
             if symbol1 is str:
-                print("Incompatible str in matrix")
+                print(f"line {node.lineno}: incompatible str in matrix")
             size += 1
         if type(symbol2) is int:
             size += symbol2
         else:
             if symbol2 is str:
-                print("Incompatible str in matrix")
+                print(f"line {node.lineno}: incompatible str in matrix")
             size += 1
         
         return size
     
     def visit_Reference(self, node):
-        #symbol = self.symbol_table.get(node.name)
+        # symbol = self.symbol_table.get(node.name)
         pass
     
     def visit_Assignment(self, node):
@@ -225,20 +220,9 @@ class TypeChecker(NodeVisitor):
             if symbol_id is None:
                 if type(node.value) in [AST.Vector, AST.ZerosStatement,\
                                         AST.OnesStatement, AST.EyeStatement]:
-                    self.symbol_table.put(Symbol(node.variable.name, list, symbol_val))
+                    self.symbol_table.put(Symbol(node.variable.name, symbol_val))
                 else:
-                    self.symbol_table.put(\
-                        Symbol(node.variable.name, symbol_val))
+                    self.symbol_table.put(Symbol(node.variable.name, symbol_val))
             else:
                 new_symbol = self.symbol_table.get(node.variable.name)
-
-                if type(symbol_val) is int:
-                    new_symbol.type = list
-                    new_symbol.size = symbol_val
-                else:
-                    new_symbol.type = symbol_val
-
-                # if symbol_id is not symbol_val and not (symbol_id is\
-                #     list and type(node.value) is AST.Vector):
-                #     print("Incompatible types assignment")
-                #     print(symbol_id, symbol_val, node.value)
+                new_symbol.type = symbol_val
