@@ -10,10 +10,10 @@ class Scanner(Lexer):
               RETURN, EYE, ZEROS, ONES, PRINT, INTNUM, FLOATNUM,
               STRING}
     
-    DOTADD = r".\+"
-    DOTSUB = r".-"
-    DOTMUL = r".\*"
-    DOTDIV = r"./"
+    DOTADD = r"\.\+"
+    DOTSUB = r"\.-"
+    DOTMUL = r"\.\*"
+    DOTDIV = r"\./"
     ADDASSIGN = r"\+="
     SUBASSIGN = r"-="
     MULASSIGN = r"\*="

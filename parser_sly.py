@@ -239,5 +239,8 @@ class Mparser(Parser):
         return AST.Condition(p.lineno, ">", p.expr0, p.expr1)
 
     def error(self, p):
-        print(f"Syntax error at line {p.lineno}, token={p.value}")
+        if p is not None:
+            print(f"Syntax error at line {p.lineno}, token={p.value}")
+        else:
+            print("Syntax error in the last line")
         self.error_handled = True

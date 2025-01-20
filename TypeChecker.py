@@ -18,6 +18,8 @@ class TypeChecker(NodeVisitor):
         self.assignment = False
         self.value = -1
         self.loop = 0
+        self.ref_bounds = [float("inf"), -float("inf")]
+
         self.TYPES_DICT = {
             int: "int",
             float: "float",
@@ -33,6 +35,8 @@ class TypeChecker(NodeVisitor):
     
     def visit_IntNum(self, node):
         self.value = int(node.value)
+        self.ref_bounds[0] = min(self.ref_bounds[0], self.value)
+        self.ref_bounds[1] = max(self.ref_bounds[1], self.value)
         return int
     
     def visit_FloatNum(self, node):
@@ -201,15 +205,31 @@ class TypeChecker(NodeVisitor):
         if type(symbol2) is int:
             size += symbol2
         else:
-            if symbol2 is str:
+            if symbol1 is str or symbol2 is str:
                 print(f"line {node.lineno}: incompatible str in matrix")
+            
             size += 1
         
         return size
     
     def visit_Reference(self, node):
-        # symbol = self.symbol_table.get(node.name)
-        pass
+        self.ref_bounds = [float("inf"), -float("inf")]
+        symbol = self.visit(node.name)
+
+        if symbol is not None:
+            ref_size = self.visit(node.elements)
+
+            if ref_size != symbol:
+                print(f"line {node.lineno}: matrix dimension {\
+                    ref_size} out of bounds")
+
+            if self.ref_bounds[0] < 0:
+                print(f"line {node.lineno}: matrix index {\
+                    self.ref_bounds[0]} does not exist")
+            if self.ref_bounds[1] >= symbol:
+                print(f"line {node.lineno}: matrix index {\
+                    self.ref_bounds[1]} does not exist")
+        
     
     def visit_Assignment(self, node):
         self.assignment = True

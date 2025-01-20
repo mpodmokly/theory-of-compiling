@@ -128,7 +128,3 @@ class Elements(Node):
         self.lineno = lineno
         self.element1 = element1
         self.element2 = element2
-
-# class Error(Node):
-#     def __init__(self):
-#         pass
