@@ -3,6 +3,7 @@ from scanner_sly import Scanner
 from parser_sly import Mparser
 from TreePrinter import TreePrinter
 from TypeChecker import TypeChecker
+from Interpreter import Interpreter
 
 
 if __name__ == '__main__':
@@ -18,7 +19,18 @@ if __name__ == '__main__':
     parser = Mparser()
     ast = parser.parse(lexer.tokenize(text))
 
-    if not lexer.error_handled and not parser.error_handled:
-        ast.printTree()
-        typeChecker = TypeChecker()
-        typeChecker.visit(ast)
+    if lexer.error_handled or parser.error_handled:
+        sys.exit(0)
+    
+    typeChecker = TypeChecker()
+    typeChecker.visit(ast)
+
+    if typeChecker.error_handled:
+        sys.exit(0)
+    
+    ast.accept(Interpreter())
+
+    # in future
+    # ast.accept(OptimizationPass1())
+    # ast.accept(OptimizationPass2())
+    # ast.accept(CodeGenerator())

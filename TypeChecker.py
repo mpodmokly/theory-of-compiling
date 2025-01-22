@@ -14,6 +14,7 @@ class NodeVisitor(object):
 
 class TypeChecker(NodeVisitor):
     def __init__(self):
+        self.error_handled = False
         self.symbol_table = SymbolTable()
         self.assignment = False
         self.value = -1
@@ -93,10 +94,12 @@ class TypeChecker(NodeVisitor):
     def visit_BreakStatement(self, node):
         if self.loop == 0:
             print(f"line {node.lineno}: break statement outside the loop")
+            self.error_handled = True
 
     def visit_ContinueStatement(self, node):
         if self.loop == 0:
             print(f"line {node.lineno}: continue statement outside the loop")
+            self.error_handled = True
 
     def visit_ReturnStatement(self, node):
         self.visit(node.value)
@@ -110,6 +113,7 @@ class TypeChecker(NodeVisitor):
         if symbol is None:
             if not self.assignment:
                 print(f"line {node.lineno}: identifier {node.name} is not declared")
+                self.error_handled = True
             
             self.assignment = False
             return None
@@ -122,6 +126,7 @@ class TypeChecker(NodeVisitor):
 
         if type is not int:
             print(f"line {node.lineno}: int type expected")
+            self.error_handled = True
         
         return self.value
 
@@ -130,6 +135,7 @@ class TypeChecker(NodeVisitor):
 
         if type is not int:
             print(f"line {node.lineno}: int type expected")
+            self.error_handled = True
         
         return self.value
 
@@ -138,6 +144,7 @@ class TypeChecker(NodeVisitor):
 
         if type is not int:
             print(f"line {node.lineno}: int type expected")
+            self.error_handled = True
 
         return self.value
     
@@ -153,6 +160,7 @@ class TypeChecker(NodeVisitor):
             if type_left != type_right:
                 print(f"line {node.lineno}: incompatible matrix sizes {\
                     type_left} and {type_right}")
+                self.error_handled = True
 
         elif type_left is not type_right:
             if not (type_left is int and type_right is float):
@@ -168,6 +176,7 @@ class TypeChecker(NodeVisitor):
                     print(f"line {node.lineno}: incompatible types {\
                         self.TYPES_DICT[type_left_key]} and {\
                         self.TYPES_DICT[type_right_key]}")
+                    self.error_handled = True
         
         return type_left
     
@@ -176,6 +185,7 @@ class TypeChecker(NodeVisitor):
 
         if type is str:
             print(f"line {node.lineno}: unary operator is not supported for type str")
+            self.error_handled = True
         
         return type
 
@@ -193,6 +203,7 @@ class TypeChecker(NodeVisitor):
             elif symbol1 != symbol2:
                 print(f"line {node.lineno}: invalid matrix dimensions {\
                     symbol1} and {symbol2}")
+                self.error_handled = True
                 return None
             return symbol2
 
@@ -201,12 +212,14 @@ class TypeChecker(NodeVisitor):
         else:
             if symbol1 is str:
                 print(f"line {node.lineno}: incompatible str in matrix")
+                self.error_handled = True
             size += 1
         if type(symbol2) is int:
             size += symbol2
         else:
             if symbol1 is str or symbol2 is str:
                 print(f"line {node.lineno}: incompatible str in matrix")
+                self.error_handled = True
             
             size += 1
         
@@ -222,14 +235,17 @@ class TypeChecker(NodeVisitor):
             if ref_size != symbol:
                 print(f"line {node.lineno}: matrix dimension {\
                     ref_size} out of bounds")
-
+                self.error_handled = True
+            
             if self.ref_bounds[0] < 0:
                 print(f"line {node.lineno}: matrix index {\
                     self.ref_bounds[0]} does not exist")
+                self.error_handled = True
+            
             if self.ref_bounds[1] >= symbol:
                 print(f"line {node.lineno}: matrix index {\
                     self.ref_bounds[1]} does not exist")
-        
+                self.error_handled = True
     
     def visit_Assignment(self, node):
         self.assignment = True
