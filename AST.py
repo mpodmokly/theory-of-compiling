@@ -79,12 +79,12 @@ class Condition(Node):
         self.left = left
         self.right = right
 
-class ReturnStatement(Node):
+class PrintStatement(Node):
     def __init__(self, lineno, value):
         self.lineno = lineno
         self.value = value
 
-class PrintStatement(Node):
+class ReturnStatement(Node):
     def __init__(self, lineno, value):
         self.lineno = lineno
         self.value = value

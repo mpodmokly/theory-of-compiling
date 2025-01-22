@@ -20,8 +20,8 @@ if __name__ == '__main__':
 
     try:
         ast = parser.parse(lexer.tokenize(text))
-    except SyntaxError as e:
-        print(e)
+    except Exception as err:
+        print(err)
         sys.exit(0)
 
     if lexer.error_handled:
@@ -34,7 +34,10 @@ if __name__ == '__main__':
         sys.exit(0)
     
     interpreter = Interpreter()
-    interpreter.visit(ast)
+    try:
+        interpreter.visit(ast)
+    except Exception as err:
+        print(err)
 
     # in future
     # ast.accept(OptimizationPass1())

@@ -4,6 +4,7 @@ from Memory import MemoryStack
 from Exceptions import  *
 from visit import *
 import sys
+import numpy as np
 
 sys.setrecursionlimit(10000)
 
@@ -99,30 +100,91 @@ class Interpreter(object):
     @when(AST.PrintStatement)
     def visit(self, node):
         value = self.visit(node.value)
-        print(value)
-    
-    @when(AST.Variable)
-    def visit(self, node):
-        if self.memory_stack.contains(node.name):
-            return self.memory_stack.get(node.name)
-        return None
 
-    @when(AST.Assignment)
+        if type(value) is list:
+            print(*value)
+        else:
+            print(value)
+    
+    @when(AST.UnExpr)
     def visit(self, node):
-        #self.visit(node.variable)
-        value = self.visit(node.value)
-        self.memory_stack.put(node.variable.name, value)
+        value = self.visit(node.arg)
+        
+        if node.operator == "'":
+            return value.T
+        elif node.operator == "-":
+            return -value
     
     @when(AST.BinExpr)
     def visit(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
         
-        if node.operator == "+":
+        if node.operator in ["+", ".+"]:
             return left + right
-        elif node.operator == "-":
+        elif node.operator in ["-", ".-"]:
             return left - right
         elif node.operator == "*":
+            if type(left) is np.ndarray:
+                return left @ right
             return left * right
         elif node.operator == "/":
+            if right == 0:
+                raise Exception(f"line {node.lineno}: division by 0")
             return left / right
+        elif node.operator == ".*":
+            return left * right
+        elif node.operator == "./":
+            return left / right
+    
+    @when(AST.Variable)
+    def visit(self, node):
+        if self.memory_stack.contains(node.name):
+            return self.memory_stack.get(node.name)
+        return None # ===== EDIT =====
+
+    @when(AST.Assignment)
+    def visit(self, node):
+        value = self.visit(node.value)
+
+        if type(value) is list:
+            value = np.array(value)
+        
+        self.memory_stack.put(node.variable.name, value)
+
+    @when(AST.Vector)
+    def visit(self, node):
+        value = self.visit(node.elements)
+        return value
+
+    @when(AST.Elements)
+    def visit(self, node):
+        value1 = self.visit(node.element1)
+        value2 = self.visit(node.element2)
+
+        if type(value1) in [int, float]:
+            return [value1, value2]
+        elif type(value1) is list and type(value2) in [int, float]:
+            value1.append(value2)
+            return value1
+        elif type(value1) is list and type(value2) is list:
+            if len(value1) == len(value2):
+                return [value1, value2]
+            else:
+                value1.append(value2)
+                return value1
+
+    @when(AST.EyeStatement)
+    def visit(self, node):
+        value = self.visit(node.value)
+        return np.eye(value, dtype=int)
+    
+    @when(AST.OnesStatement)
+    def visit(self, node):
+        value = self.visit(node.value)
+        return np.ones((value, value), dtype=int)
+    
+    @when(AST.ZerosStatement)
+    def visit(self, node):
+        value = self.visit(node.value)
+        return np.zeros((value, value), dtype=int)

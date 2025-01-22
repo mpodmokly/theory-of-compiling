@@ -237,6 +237,6 @@ class Mparser(Parser):
 
     def error(self, p):
         if p is not None:
-            raise SyntaxError(f"Syntax error at line {p.lineno}, token={p.value}")
+            raise Exception(f"Syntax error at line {p.lineno}, token={p.value}")
         else:
-            raise SyntaxError("Syntax error in the last line")
+            raise Exception("Syntax error in the last line")

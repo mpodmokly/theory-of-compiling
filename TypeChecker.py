@@ -162,33 +162,45 @@ class TypeChecker(NodeVisitor):
                 print(f"line {node.lineno}: incompatible matrix sizes {\
                     type_left} and {type_right}")
                 self.error_handled = True
+            
+            if node.operator == "/":
+                print(f"line {node.lineno}: invalid / operator for matrix")
+                self.error_handled = True
+        elif node.operator in [".+", ".-", ".*", "./"]:
+            print(f"line {node.lineno}: invalid {node.operator\
+                } operator for scalar")
+            self.error_handled = True
 
-        elif type_left is not type_right:
-            if not (type_left is int and type_right is float):
-                if not (type_left is float and type_right is int):
-                    type_left_key = type_left
-                    type_right_key = type_right
+        if type_left is not type_right:
+            if not (type_left in [int, float] and type_right in [int, float]):
+                type_left_key = type_left
+                type_right_key = type_right
 
-                    if type(type_left_key) is int:
-                        type_left_key = list
-                    if type(type_right_key) is int:
-                        type_right_key = list
-                    
-                    print(f"line {node.lineno}: incompatible types {\
-                        self.TYPES_DICT[type_left_key]} and {\
-                        self.TYPES_DICT[type_right_key]}")
-                    self.error_handled = True
+                if type(type_left_key) is int:
+                    type_left_key = list
+                if type(type_right_key) is int:
+                    type_right_key = list
+                
+                print(f"line {node.lineno}: incompatible types {\
+                    self.TYPES_DICT[type_left_key]} and {\
+                    self.TYPES_DICT[type_right_key]}")
+                self.error_handled = True
         
         return type_left
     
     def visit_UnExpr(self, node):
-        type = self.visit(node.arg)
+        symbol = self.visit(node.arg)
 
-        if type is str:
+        if symbol is str:
             print(f"line {node.lineno}: unary operator is not supported for type str")
             self.error_handled = True
+        elif symbol in [int, float] and node.operator == "'":
+            text = f"line {node.lineno}: transpose operator is not"
+            text += f" supported for type {self.TYPES_DICT[symbol]}"
+            print(text)
+            self.error_handled = True
         
-        return type
+        return symbol
 
     def visit_Vector(self, node):
         return self.visit(node.elements)
