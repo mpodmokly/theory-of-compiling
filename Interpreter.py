@@ -9,6 +9,9 @@ sys.setrecursionlimit(10000)
 
 
 class Interpreter(object):
+    def __init__(self):
+        self.memory = Memory()
+
     @on('node')
     def visit(self, node):
         pass
@@ -32,16 +35,33 @@ class Interpreter(object):
         if node.instr_second is not None:
             self.visit(node.instr_second)
     
-    @when(AST.BinExpr)
+    @when(AST.Variable)
     def visit(self, node):
-        r1 = node.left.accept(self)
-        r2 = node.right.accept(self)
-        # try sth smarter than:
-        # if(node.op=='+') return r1+r2
-        # elsif(node.op=='-') ...
-        # but do not use python eval
+        if self.memory.contains(node.name):
+            return self.memory.get(node.name)
+        return None
 
     @when(AST.Assignment)
+    def visit(self, node):
+        self.visit(node.variable)
+        value = self.visit(node.value)
+        self.memory.put(node.variable.name, value)
+    
+    @when(AST.BinExpr)
+    def visit(self, node):
+        left = self.visit(node.left)
+        right = self.visit(node.right)
+        
+        if node.operator == "+":
+            return left + right
+        elif node.operator == "-":
+            return left - right
+        elif node.operator == "*":
+            return left * right
+        elif node.operator == "/":
+            return left / right
+    
+    @when(AST.PrintStatement)
     def visit(self, node):
         value = self.visit(node.value)
         print(value)
