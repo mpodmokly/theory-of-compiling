@@ -17,9 +17,14 @@ if __name__ == '__main__':
     text = file.read()
     lexer = Scanner()
     parser = Mparser()
-    ast = parser.parse(lexer.tokenize(text))
 
-    if lexer.error_handled or parser.error_handled:
+    try:
+        ast = parser.parse(lexer.tokenize(text))
+    except SyntaxError as e:
+        print(e)
+        sys.exit(0)
+
+    if lexer.error_handled:
         sys.exit(0)
     
     typeChecker = TypeChecker()

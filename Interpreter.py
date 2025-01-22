@@ -35,6 +35,25 @@ class Interpreter(object):
         if node.instr_second is not None:
             self.visit(node.instr_second)
     
+    @when(AST.IfStatement)
+    def visit(self, node):
+        condition = self.visit(node.condition)
+        
+        if condition:
+            self.visit(node.true_statement)
+        elif node.false_statement is not None:
+            self.visit(node.false_statement)
+
+    @when(AST.Condition)
+    def visit(self, node):
+        left = self.visit(node.left)
+        right = self.visit(node.right)
+
+        if node.operator == "==":
+            return left == right
+        if node.operator == "!=":
+            return left != right
+    
     @when(AST.Variable)
     def visit(self, node):
         if self.memory.contains(node.name):

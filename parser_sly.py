@@ -16,10 +16,7 @@ class Mparser(Parser):
         ('right', UMINUS),
         ('left', "\'"),
     )
-
-    def __init__(self):
-        self.error_handled = False
-
+    
     @_('instructions_opt')
     def program(self, p):
         return AST.Instructions(p.lineno, p.instructions_opt)
@@ -240,7 +237,6 @@ class Mparser(Parser):
 
     def error(self, p):
         if p is not None:
-            print(f"Syntax error at line {p.lineno}, token={p.value}")
+            raise SyntaxError(f"Syntax error at line {p.lineno}, token={p.value}")
         else:
-            print("Syntax error in the last line")
-        self.error_handled = True
+            raise SyntaxError("Syntax error in the last line")
