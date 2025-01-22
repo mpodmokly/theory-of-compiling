@@ -40,7 +40,11 @@ class Dispatcher(object):
             issub = issubclass
             t = self.targets
             ks = iter(t)
-            return [t[k](*args, **kw) for k in ks if issub(typ, k)]
+            result = [t[k](*args, **kw) for k in ks if issub(typ, k)]
+
+            if result:
+                return result
+            raise Exception(f"No matching method for {typ.__name__}")
 
     def add_target(self, typ, target):
         self.targets[typ] = target
