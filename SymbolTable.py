@@ -12,7 +12,7 @@ class SymbolTable(object):
         self.scopes[-1][symbol.name] = symbol
 
     def get(self, name):
-        for scope in self.scopes:
+        for scope in reversed(self.scopes):
             if name in scope:
                 return scope[name]
         

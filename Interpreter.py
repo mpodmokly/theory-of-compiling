@@ -1,6 +1,6 @@
 import AST
 import SymbolTable
-from Memory import *
+from Memory import MemoryStack
 from Exceptions import  *
 from visit import *
 import sys
@@ -10,7 +10,7 @@ sys.setrecursionlimit(10000)
 
 class Interpreter(object):
     def __init__(self):
-        self.memory = Memory()
+        self.memory_stack = MemoryStack()
 
     @on('node')
     def visit(self, node):
@@ -40,10 +40,14 @@ class Interpreter(object):
         condition = self.visit(node.condition)
         
         if condition:
+            self.memory_stack.push()
             self.visit(node.true_statement)
+            self.memory_stack.pop()
         elif node.false_statement is not None:
+            self.memory_stack.push()
             self.visit(node.false_statement)
-
+            self.memory_stack.pop()
+    
     @when(AST.Condition)
     def visit(self, node):
         left = self.visit(node.left)
@@ -53,18 +57,61 @@ class Interpreter(object):
             return left == right
         if node.operator == "!=":
             return left != right
+        if node.operator == "<=":
+            return left <= right
+        if node.operator == ">=":
+            return left >= right
+        if node.operator == "<":
+            return left < right
+        if node.operator == ">":
+            return left > right
+    
+    @when(AST.ForStatement)
+    def visit(self, node):
+        begin, end = self.visit(node.for_range)
+        self.memory_stack.push()
+
+        for i in range(begin, end + 1):
+            self.memory_stack.put(node.variable.name, i)
+            self.visit(node.statement)
+        
+        self.memory_stack.pop()
+    
+    @when(AST.Range)
+    def visit(self, node):
+        begin = self.visit(node.begin)
+        end = self.visit(node.end)
+        return begin, end
+
+    @when(AST.WhileStatement)
+    def visit(self, node):
+        self.memory_stack.push()
+
+        while self.visit(node.condition):
+            self.visit(node.statement)
+        
+        self.memory_stack.pop()
+    
+    # return
+    # continue
+    # break
+    
+    @when(AST.PrintStatement)
+    def visit(self, node):
+        value = self.visit(node.value)
+        print(value)
     
     @when(AST.Variable)
     def visit(self, node):
-        if self.memory.contains(node.name):
-            return self.memory.get(node.name)
+        if self.memory_stack.contains(node.name):
+            return self.memory_stack.get(node.name)
         return None
 
     @when(AST.Assignment)
     def visit(self, node):
-        self.visit(node.variable)
+        #self.visit(node.variable)
         value = self.visit(node.value)
-        self.memory.put(node.variable.name, value)
+        self.memory_stack.put(node.variable.name, value)
     
     @when(AST.BinExpr)
     def visit(self, node):
@@ -79,15 +126,3 @@ class Interpreter(object):
             return left * right
         elif node.operator == "/":
             return left / right
-    
-    @when(AST.PrintStatement)
-    def visit(self, node):
-        value = self.visit(node.value)
-        print(value)
-    
-    @when(AST.WhileStatement)
-    def visit(self, node):
-        r = None
-        while node.cond.accept(self):
-            r = node.body.accept(self)
-        return r

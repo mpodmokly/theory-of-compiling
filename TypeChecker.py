@@ -51,12 +51,13 @@ class TypeChecker(NodeVisitor):
         self.symbol_table.pushScope()
         self.visit(node.condition)
         self.visit(node.true_statement)
+        self.symbol_table.popScope()
 
         if node.false_statement is not None:
+            self.symbol_table.pushScope()
             self.visit(node.false_statement)
+            self.symbol_table.popScope()
         
-        self.symbol_table.popScope()
-    
     def visit_Condition(self, node):
         self.visit(node.left)
         self.visit(node.right)

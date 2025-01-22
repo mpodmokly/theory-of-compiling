@@ -1,7 +1,6 @@
-a = 2;
-b = 3;
-c = a + b;
+a = 0;
 
-if (a == 2){
-    print b;
+while (a < 5) {
+    print a;
+    a += 1;
 }
