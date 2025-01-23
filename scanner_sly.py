@@ -1,6 +1,7 @@
 import sys
 from sly import Lexer
 
+
 class Scanner(Lexer):
     ignore = " \t"
     literals = "=();':,{}[]+-*/<>"
@@ -27,7 +28,7 @@ class Scanner(Lexer):
     FLOATNUM = r"-?(\d+\.\d+|\d+\.|\.\d+)((e|E)-?\d+)?"
     INTNUM = r"-?\d+"
 
-    ID = r"[a-zA-Z_][a-zA-Z0-9]*"
+    ID = r"[a-zA-Z_][a-zA-Z0-9_]*"
     ID["if"] = IF
     ID["else"] = ELSE
     ID["for"] = FOR

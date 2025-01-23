@@ -8,7 +8,7 @@ from Interpreter import Interpreter
 
 if __name__ == '__main__':
     try:
-        filename = sys.argv[1] if len(sys.argv) > 1 else "tests/my_test.m"
+        filename = sys.argv[1] if len(sys.argv) > 1 else "example.m"
         file = open(filename, "r")
     except IOError:
         print("Cannot open {0} file".format(filename))
@@ -17,11 +17,6 @@ if __name__ == '__main__':
     text = file.read()
     lexer = Scanner()
     parser = Mparser()
-
-    # tokens = lexer.tokenize(text)
-    # for token in tokens:
-    #     print(token)
-    # sys.exit(0)
 
     try:
         ast = parser.parse(lexer.tokenize(text))
@@ -43,8 +38,3 @@ if __name__ == '__main__':
         interpreter.visit(ast)
     except ZeroDivisionError as err:
         print(err)
-
-    # in future
-    # ast.accept(OptimizationPass1())
-    # ast.accept(OptimizationPass2())
-    # ast.accept(CodeGenerator())
