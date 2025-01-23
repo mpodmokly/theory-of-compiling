@@ -18,9 +18,14 @@ if __name__ == '__main__':
     lexer = Scanner()
     parser = Mparser()
 
+    # tokens = lexer.tokenize(text)
+    # for token in tokens:
+    #     print(token)
+    # sys.exit(0)
+
     try:
         ast = parser.parse(lexer.tokenize(text))
-    except Exception as err:
+    except SyntaxError as err:
         print(err)
         sys.exit(0)
 
@@ -36,7 +41,7 @@ if __name__ == '__main__':
     interpreter = Interpreter()
     try:
         interpreter.visit(ast)
-    except Exception as err:
+    except ZeroDivisionError as err:
         print(err)
 
     # in future

@@ -1,7 +1,7 @@
 import AST
 import SymbolTable
 from Memory import MemoryStack
-from Exceptions import  *
+from Exceptions import BreakException, ContinueException
 from visit import *
 import sys
 import numpy as np
@@ -12,6 +12,7 @@ sys.setrecursionlimit(10000)
 class Interpreter(object):
     def __init__(self):
         self.memory_stack = MemoryStack()
+        self.reference = False
 
     @on('node')
     def visit(self, node):
@@ -27,7 +28,7 @@ class Interpreter(object):
     
     @when(AST.String)
     def visit(self, node):
-        return str(node.value)
+        return str(node.value)[1:-1]
 
     @when(AST.Instructions)
     def visit(self, node):
@@ -74,7 +75,13 @@ class Interpreter(object):
 
         for i in range(begin, end + 1):
             self.memory_stack.put(node.variable.name, i)
-            self.visit(node.statement)
+
+            try:
+                self.visit(node.statement)
+            except BreakException:
+                break
+            except ContinueException:
+                continue
         
         self.memory_stack.pop()
     
@@ -93,9 +100,17 @@ class Interpreter(object):
         
         self.memory_stack.pop()
     
-    # return
-    # continue
-    # break
+    @when(AST.BreakStatement)
+    def visit(self, node):
+        raise BreakException()
+    
+    @when(AST.ContinueStatement)
+    def visit(self, node):
+        raise ContinueException()
+    
+    @when(AST.ReturnStatement)
+    def visit(self, node):
+        pass
     
     @when(AST.PrintStatement)
     def visit(self, node):
@@ -130,7 +145,7 @@ class Interpreter(object):
             return left * right
         elif node.operator == "/":
             if right == 0:
-                raise Exception(f"line {node.lineno}: division by 0")
+                raise ZeroDivisionError(f"line {node.lineno}: division by 0")
             return left / right
         elif node.operator == ".*":
             return left * right
@@ -139,9 +154,7 @@ class Interpreter(object):
     
     @when(AST.Variable)
     def visit(self, node):
-        if self.memory_stack.contains(node.name):
-            return self.memory_stack.get(node.name)
-        return None # ===== EDIT =====
+        return self.memory_stack.get(node.name)
 
     @when(AST.Assignment)
     def visit(self, node):
@@ -149,8 +162,14 @@ class Interpreter(object):
 
         if type(value) is list:
             value = np.array(value)
-        
-        self.memory_stack.put(node.variable.name, value)
+        if type(node.variable) is AST.Reference:
+            self.reference = True
+            indexes = self.visit(node.variable)
+            name = node.variable.name.name
+            matrix = self.memory_stack.get(name)
+            matrix[indexes[0]][indexes[1]] = value
+        else:
+            self.memory_stack.put(node.variable.name, value)
 
     @when(AST.Vector)
     def visit(self, node):
@@ -173,6 +192,16 @@ class Interpreter(object):
             else:
                 value1.append(value2)
                 return value1
+    
+    @when(AST.Reference)
+    def visit(self, node):
+        matrix = self.visit(node.name)
+        indexes = self.visit(node.elements)
+
+        if self.reference:
+            self.reference = False
+            return indexes
+        return matrix[indexes[0]][indexes[1]]
 
     @when(AST.EyeStatement)
     def visit(self, node):

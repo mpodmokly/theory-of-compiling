@@ -173,18 +173,25 @@ class TypeChecker(NodeVisitor):
 
         if type_left is not type_right:
             if not (type_left in [int, float] and type_right in [int, float]):
-                type_left_key = type_left
-                type_right_key = type_right
+                if not (type_left in [int, str] and type_right in [int, str] and\
+                    node.operator in ["+", "*"]):
+                    type_left_key = type_left
+                    type_right_key = type_right
 
-                if type(type_left_key) is int:
-                    type_left_key = list
-                if type(type_right_key) is int:
-                    type_right_key = list
-                
-                print(f"line {node.lineno}: incompatible types {\
-                    self.TYPES_DICT[type_left_key]} and {\
-                    self.TYPES_DICT[type_right_key]}")
-                self.error_handled = True
+                    if type(type_left_key) is int:
+                        type_left_key = list
+                    if type(type_right_key) is int:
+                        type_right_key = list
+                    
+                    print(f"line {node.lineno}: incompatible types {\
+                        self.TYPES_DICT[type_left_key]} and {\
+                        self.TYPES_DICT[type_right_key]}")
+                    self.error_handled = True
+        elif type_left is str and type_right is str and\
+            node.operator in ["-", "*", "/"]:
+            print(f"line {node.lineno}: invalid operator {\
+                node.operator} for str")
+            self.error_handled = True
         
         return type_left
     
@@ -245,7 +252,10 @@ class TypeChecker(NodeVisitor):
         if symbol is not None:
             ref_size = self.visit(node.elements)
 
-            if ref_size != symbol:
+            if ref_size is int:
+                print(f"line {node.lineno}: matrix dimension 1 too low")
+                self.error_handled = True
+            elif ref_size != 2:
                 print(f"line {node.lineno}: matrix dimension {\
                     ref_size} out of bounds")
                 self.error_handled = True
@@ -259,19 +269,25 @@ class TypeChecker(NodeVisitor):
                 print(f"line {node.lineno}: matrix index {\
                     self.ref_bounds[1]} does not exist")
                 self.error_handled = True
+        
+        return int
     
     def visit_Assignment(self, node):
         self.assignment = True
         symbol_id = self.visit(node.variable) # left
         symbol_val = self.visit(node.value)   # right
-
+        
         if symbol_val is not None:
             if symbol_id is None:
-                if type(node.value) in [AST.Vector, AST.ZerosStatement,\
-                                        AST.OnesStatement, AST.EyeStatement]:
-                    self.symbol_table.put(Symbol(node.variable.name, symbol_val))
-                else:
-                    self.symbol_table.put(Symbol(node.variable.name, symbol_val))
+                self.symbol_table.put(Symbol(node.variable.name, symbol_val))
             else:
-                new_symbol = self.symbol_table.get(node.variable.name)
-                new_symbol.type = symbol_val
+                if type(node.variable) is AST.Reference:
+                    if symbol_val is str:
+                        print(f"line {node.lineno}: incompatible str in matrix")
+                        self.error_handled = True
+                    elif type(symbol_val) is int:
+                        print(f"line {node.lineno}: incompatible matrix in matrix")
+                        self.error_handled = True
+                else:
+                    new_symbol = self.symbol_table.get(node.variable.name)
+                    new_symbol.type = symbol_val
