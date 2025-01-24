@@ -1,5 +1,5 @@
 import AST
-from SymbolTable import SymbolTable, Symbol
+from symbol_table import SymbolTable, Symbol
 
 
 class NodeVisitor(object):

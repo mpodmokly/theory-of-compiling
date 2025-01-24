@@ -2,6 +2,7 @@ from sly import Parser
 from scanner_sly import Scanner
 import AST
 
+
 class Mparser(Parser):
     tokens = Scanner.tokens
     debugfile = 'parser.out'

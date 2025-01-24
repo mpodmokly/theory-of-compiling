@@ -1,7 +1,7 @@
 import AST
-import SymbolTable
-from Memory import MemoryStack
-from Exceptions import BreakException, ContinueException
+import symbol_table
+from memory import MemoryStack
+from exceptions import BreakException, ContinueException
 from visit import *
 import sys
 import numpy as np
@@ -43,19 +43,23 @@ class Interpreter(object):
         
         if condition:
             self.memory_stack.push()
-            self.visit(node.true_statement)
-            self.memory_stack.pop()
+            try:
+                self.visit(node.true_statement)
+            finally:
+                self.memory_stack.pop()
         elif node.false_statement is not None:
             self.memory_stack.push()
-            self.visit(node.false_statement)
-            self.memory_stack.pop()
+            try:
+                self.visit(node.false_statement)
+            finally:
+                self.memory_stack.pop()
     
     @when(AST.Condition)
     def visit(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
 
-        if node.operator == "==":
+        if node.operator == "==": # dictionary
             return left == right
         if node.operator == "!=":
             return left != right
@@ -73,17 +77,18 @@ class Interpreter(object):
         begin, end = self.visit(node.for_range)
         self.memory_stack.push()
 
-        for i in range(begin, end + 1):
-            self.memory_stack.put(node.variable.name, i)
+        try:
+            for i in range(begin, end + 1):
+                self.memory_stack.put(node.variable.name, i)
 
-            try:
-                self.visit(node.statement)
-            except BreakException:
-                break
-            except ContinueException:
-                continue
-        
-        self.memory_stack.pop()
+                try:
+                    self.visit(node.statement)
+                except BreakException:
+                    break
+                except ContinueException:
+                    continue
+        finally:
+            self.memory_stack.pop()
     
     @when(AST.Range)
     def visit(self, node):
@@ -95,10 +100,16 @@ class Interpreter(object):
     def visit(self, node):
         self.memory_stack.push()
 
-        while self.visit(node.condition):
-            self.visit(node.statement)
-        
-        self.memory_stack.pop()
+        try:
+            while self.visit(node.condition):
+                try:
+                    self.visit(node.statement)
+                except BreakException:
+                    break
+                except ContinueException:
+                    continue
+        finally:
+            self.memory_stack.pop()
     
     @when(AST.BreakStatement)
     def visit(self, node):

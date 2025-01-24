@@ -1,9 +1,9 @@
 import sys
 from scanner_sly import Scanner
 from parser_sly import Mparser
-from TreePrinter import TreePrinter
-from TypeChecker import TypeChecker
-from Interpreter import Interpreter
+from tree_printer import TreePrinter
+from type_checker import TypeChecker
+from interpreter import Interpreter
 
 
 if __name__ == '__main__':

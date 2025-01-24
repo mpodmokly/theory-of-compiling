@@ -7,6 +7,7 @@ def addToClass(cls):
     
     return decorator
 
+
 class TreePrinter:
     @addToClass(AST.Node)
     def printTree(self, indent = 0):
