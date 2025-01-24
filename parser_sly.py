@@ -123,6 +123,34 @@ class Mparser(Parser):
     def instruction(self, p):
         return AST.Assignment(p.lineno, AST.Variable(p.lineno, p.ID),\
             AST.BinExpr(p.lineno, "/", AST.Variable(p.lineno, p.ID), p.expr))
+    
+    @_('ID "[" elements "]" ADDASSIGN expr ";"')
+    def instruction(self, p):
+        return AST.Assignment(p.lineno, AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements),\
+            AST.BinExpr(p.lineno, "+", AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements), p.expr))
+
+    @_('ID "[" elements "]" SUBASSIGN expr ";"')
+    def instruction(self, p):
+        return AST.Assignment(p.lineno, AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements),\
+            AST.BinExpr(p.lineno, "-", AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements), p.expr))
+    
+    @_('ID "[" elements "]" MULASSIGN expr ";"')
+    def instruction(self, p):
+        return AST.Assignment(p.lineno, AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements),\
+            AST.BinExpr(p.lineno, "*", AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements), p.expr))
+
+    @_('ID "[" elements "]" DIVASSIGN expr ";"')
+    def instruction(self, p):
+        return AST.Assignment(p.lineno, AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements),\
+            AST.BinExpr(p.lineno, "/", AST.Reference(p.lineno,\
+            AST.Variable(p.lineno, p.ID), p.elements), p.expr))
 
     @_('expr "\'"')
     def expr(self, p):

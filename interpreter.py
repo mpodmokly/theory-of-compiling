@@ -146,7 +146,7 @@ class Interpreter(object):
         left = self.visit(node.left)
         right = self.visit(node.right)
         
-        if node.operator in ["+", ".+"]:
+        if node.operator in ["+", ".+"]: # dictionary
             return left + right
         elif node.operator in ["-", ".-"]:
             return left - right
