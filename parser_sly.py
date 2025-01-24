@@ -8,14 +8,12 @@ class Mparser(Parser):
     debugfile = 'parser.out'
 
     precedence = (
-        # ('nonassoc', IFX),
-        # ('nonassoc', ELSE),
         ('nonassoc', ADDASSIGN, SUBASSIGN, MULASSIGN, DIVASSIGN),
         ('nonassoc', EQ, NOTEQ, LESSEQ, MOREEQ, "<", ">"),
-        ('left', "+", "-", DOTADD, DOTSUB),
+        ('left', "+", MINUS, DOTADD, DOTSUB),
         ('left', "*", "/", DOTMUL, DOTDIV),
         ('right', UMINUS),
-        ('left', "\'"),
+        ('left', "\'")
     )
     
     @_('instructions_opt')
@@ -54,7 +52,7 @@ class Mparser(Parser):
     def instructions(self, p):
         return AST.Instructions(p.lineno, p.instruction)
     
-    @_('IF "(" condition ")" instruction') # %prec IFX
+    @_('IF "(" condition ")" instruction')
     def instruction_if(self, p):
         return AST.IfStatement(p.lineno, p.condition, p.instruction)
     
@@ -160,7 +158,7 @@ class Mparser(Parser):
     def expr(self, p):
         return AST.BinExpr(p.lineno, "+", p.expr0, p.expr1)
 
-    @_('expr "-" expr')
+    @_('expr MINUS expr')
     def expr(self, p):
         return AST.BinExpr(p.lineno, "-", p.expr0, p.expr1)
 
@@ -172,7 +170,7 @@ class Mparser(Parser):
     def expr(self, p):
         return AST.BinExpr(p.lineno, "/", p.expr0, p.expr1)
 
-    @_('"-" expr %prec UMINUS')
+    @_('MINUS expr %prec UMINUS')
     def expr(self, p):
         return AST.UnExpr(p.lineno, "-", p.expr)
 

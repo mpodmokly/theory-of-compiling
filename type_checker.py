@@ -17,6 +17,7 @@ class TypeChecker(NodeVisitor):
         self.error_handled = False
         self.symbol_table = SymbolTable()
         self.assignment = False
+        self.vector = False
         self.value = -1
         self.loop = 0
         self.ref_bounds = [float("inf"), -float("inf")]
@@ -210,13 +211,23 @@ class TypeChecker(NodeVisitor):
         return symbol
 
     def visit_Vector(self, node):
-        return self.visit(node.elements)
+        
+        symbol = self.visit(node.elements)
+
+        if not self.vector:
+            print(f"line {node.lineno}: invalid 1D matrix")
+            self.error_handled = True
+
+        return symbol
     
     def visit_Elements(self, node):
+        if type(node.element2) is AST.Vector:
+            self.vector = True
+
         size = 0
         symbol1 = self.visit(node.element1)
         symbol2 = self.visit(node.element2)
-
+        
         if type(node.element2) is AST.Vector:
             if symbol1 is None:
                 return None
@@ -242,7 +253,7 @@ class TypeChecker(NodeVisitor):
                 self.error_handled = True
             
             size += 1
-        
+
         return size
     
     def visit_Reference(self, node):
@@ -274,6 +285,7 @@ class TypeChecker(NodeVisitor):
     
     def visit_Assignment(self, node):
         self.assignment = True
+        self.vector = False
         symbol_id = self.visit(node.variable) # left
         symbol_val = self.visit(node.value)   # right
         

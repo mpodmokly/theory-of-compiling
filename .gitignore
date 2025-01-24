@@ -2,4 +2,3 @@ __pycache__/
 .VSCodeCounter/
 intro/
 *.out
-test.py

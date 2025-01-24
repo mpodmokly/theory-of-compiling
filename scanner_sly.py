@@ -4,12 +4,12 @@ from sly import Lexer
 
 class Scanner(Lexer):
     ignore = " \t"
-    literals = "=();':,{}[]+-*/<>"
+    literals = "=();':,{}[]+*/<>"
     tokens = {ID, DOTADD, DOTSUB, DOTMUL, DOTDIV, ADDASSIGN,
               SUBASSIGN, MULASSIGN, DIVASSIGN, EQ, NOTEQ, LESSEQ,
               MOREEQ, IF, ELSE, FOR, WHILE, BREAK, CONTINUE,
               RETURN, EYE, ZEROS, ONES, PRINT, INTNUM, FLOATNUM,
-              STRING}
+              STRING, MINUS}
     
     DOTADD = r"\.\+"
     DOTSUB = r"\.-"
@@ -23,6 +23,7 @@ class Scanner(Lexer):
     NOTEQ = r"!="
     LESSEQ = r"<="
     MOREEQ = r">="
+    MINUS = r"-"
 
     STRING = r"(\".*?\")|(\'.*?\')"
     FLOATNUM = r"-?(\d+\.\d+|\d+\.|\.\d+)((e|E)-?\d+)?"

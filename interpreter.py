@@ -1,10 +1,11 @@
 import AST
 import symbol_table
+import sys
+import numpy as np
+import operator
 from memory import MemoryStack
 from exceptions import BreakException, ContinueException
 from visit import *
-import sys
-import numpy as np
 
 sys.setrecursionlimit(10000)
 
@@ -59,18 +60,16 @@ class Interpreter(object):
         left = self.visit(node.left)
         right = self.visit(node.right)
 
-        if node.operator == "==": # dictionary
-            return left == right
-        if node.operator == "!=":
-            return left != right
-        if node.operator == "<=":
-            return left <= right
-        if node.operator == ">=":
-            return left >= right
-        if node.operator == "<":
-            return left < right
-        if node.operator == ">":
-            return left > right
+        operators = {
+            "==": operator.eq,
+            "!=": operator.ne,
+            "<=": operator.le,
+            ">=": operator.ge,
+            "<": operator.lt,
+            ">": operator.gt
+        }
+
+        return operators[node.operator](left, right)
     
     @when(AST.ForStatement)
     def visit(self, node):
@@ -145,23 +144,29 @@ class Interpreter(object):
     def visit(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
-        
-        if node.operator in ["+", ".+"]: # dictionary
-            return left + right
-        elif node.operator in ["-", ".-"]:
-            return left - right
-        elif node.operator == "*":
+
+        if node.operator == "*":
             if type(left) is np.ndarray:
                 return left @ right
             return left * right
-        elif node.operator == "/":
-            if right == 0:
+        if node.operator in ["/", "./"]:
+            if type(left) is np.ndarray:
+                if np.any(right == 0):
+                    raise ZeroDivisionError(f"line {node.lineno\
+                        }: division by 0")
+            elif right == 0:
                 raise ZeroDivisionError(f"line {node.lineno}: division by 0")
             return left / right
-        elif node.operator == ".*":
-            return left * right
-        elif node.operator == "./":
-            return left / right
+        
+        operators = {
+            "+": operator.add,
+            ".+": operator.add,
+            "-": operator.sub,
+            ".-": operator.sub,
+            ".*": operator.mul
+        }
+
+        return operators[node.operator](left, right)
     
     @when(AST.Variable)
     def visit(self, node):
